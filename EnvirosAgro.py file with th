@@ -1,0 +1,258 @@
+# Create a downloadable .py file with the dashboard code
+
+app_code = """
+import streamlit as st
+import numpy as np
+import pandas as pd
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+# Page Configuration
+st.set_page_config(layout="wide", page_title="Sustainable Agriculture Dashboard")
+
+# Placeholder Data
+np.random.seed(42)
+regions = ["Kenya", "Ethiopia", "Tanzania"]
+crops = ["Maize", "Beans", "Tomatoes"]
+scenarios = ["Baseline", "Irrigation", "High Adoption", "Combined"]
+
+years = 10
+monte_carlo_runs = 100
+
+def generate_placeholder_data():
+    df_list = []
+    for scenario in scenarios:
+        for region in regions:
+            for crop in crops:
+                m = np.random.uniform(0.5, 10, years)
+                Yield = np.random.uniform(5, 20, years)
+                Profit = Yield * np.random.uniform(200, 500) - np.random.uniform(1000, 5000)
+                df = pd.DataFrame({
+                    "Year": np.arange(1, years+1),
+                    "m": m,
+                    "Yield": Yield,
+                    "Profit": Profit,
+                    "Scenario": scenario,
+                    "Region": region,
+                    "Crop": crop
+                })
+                df_list.append(df)
+    return pd.concat(df_list).reset_index(drop=True)
+
+df_all = generate_placeholder_data()
+
+# Tabs Layout
+tabs = st.tabs([
+    "Performance Scorecard", "KPI Snapshot", "Scenario Impact Summary",
+    "Historical Trends", "Forecast Panel", "Heatmaps", "Best Scenario",
+    "Scenario Comparison", "Recommended Actions", "Export Data"
+])
+
+# Tab 0: Performance Scorecard
+with tabs[0]:
+    st.header("Performance Scorecard")
+    sel_regions = st.multiselect("Select Regions", df_all["Region"].unique(), default=df_all["Region"].unique())
+    sel_crops = st.multiselect("Select Crops", df_all["Crop"].unique(), default=df_all["Crop"].unique())
+    sel_scenarios = st.multiselect("Select Scenarios", df_all["Scenario"].unique(), default=df_all["Scenario"].unique())
+
+    df_filtered = df_all[(df_all["Region"].isin(sel_regions)) &
+                         (df_all["Crop"].isin(sel_crops)) &
+                         (df_all["Scenario"].isin(sel_scenarios))]
+
+    w_m, w_y, w_p = 1/3, 1/3, 1/3
+    m_min, m_max = df_all["m"].min(), df_all["m"].max()
+    y_min, y_max = df_all["Yield"].min(), df_all["Yield"].max()
+    p_min, p_max = df_all["Profit"].min(), df_all["Profit"].max()
+
+    df_filtered["Score"] = (
+        w_m*(df_filtered["m"]-m_min)/(m_max-m_min) +
+        w_y*(df_filtered["Yield"]-y_min)/(y_max-y_min) +
+        w_p*(df_filtered["Profit"]-p_min)/(p_max-p_min)
+    ) * 100
+
+    avg_m = df_filtered["m"].mean()
+    avg_yield = df_filtered["Yield"].mean()
+    avg_profit = df_filtered["Profit"].mean()
+    avg_score = df_filtered["Score"].mean()
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Average Sustainability m", f"{avg_m:.2f}")
+    col2.metric("Average Yield (tons/ha)", f"{avg_yield:.2f}")
+    col3.metric("Average Profit ($)", f"{avg_profit:.2f}")
+    col4.metric("Average Sustainability Score", f"{avg_score:.2f}")
+
+    scorecard = df_filtered.groupby(["Scenario","Region","Crop"])["Score"].mean().reset_index()
+    def color_score(val):
+        if val >= 75: return 'background-color: #28a745; color:white'
+        elif val >= 50: return 'background-color: #ffc107; color:black'
+        else: return 'background-color: #dc3545; color:white'
+    st.dataframe(scorecard.style.applymap(color_score, subset=["Score"]))
+
+    st.markdown("### Top 5 Performing Scenarios")
+    st.table(scorecard.sort_values("Score", ascending=False).head(5))
+
+# Other tabs can have placeholders for now
+with tabs[1]:
+    st.header("KPI Snapshot")
+    st.line_chart(df_all.groupby("Year")["Yield"].mean())
+with tabs[2]:
+    st.header("Scenario Impact Summary")
+    st.bar_chart(df_all.groupby("Scenario")["Profit"].mean())
+with tabs[3]:
+    st.header("Historical Trends")
+    st.line_chart(df_all.groupby("Year")["m"].mean())
+with tabs[4]:
+    st.header("Forecast Panel")
+    st.markdown("Holt-Winters forecasts can be displayed here.")
+with tabs[5]:
+    st.header("Heatmaps")
+    st.markdown("Interactive heatmaps for metrics by Region/Crop/Scenario.")
+with tabs[6]:
+    st.header("Best Scenario Analysis")
+    st.table(scorecard.sort_values("Score", ascending=False).head(5))
+with tabs[7]:
+    st.header("Scenario Comparison")
+    st.line_chart(df_all.pivot_table(index="Year", columns="Scenario", values="Yield"))
+with tabs[8]:
+    st.header("Recommended Actions")
+    st.markdown("Provide actionable recommendations based on Score and metrics.")
+with tabs[9]:
+    st.header("Export Data")
+    csv = df_all.to_csv(index=False).encode('utf-8')
+    st.download_button("Download Full Dataset", data=csv, file_name="sustainability_dashboard_data.csv", mime="text/csv")
+"""
+
+# Save the file to /mnt/data so the user can download it
+file_path = '/mnt/data/sustainable_agriculture_dashboard.py'
+with open(file_path, 'w') as f:
+    f.write(app_code)
+
+file_path
+# Create a downloadable .py file with the dashboard code
+
+app_code = """
+import streamlit as st
+import numpy as np
+import pandas as pd
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+# Page Configuration
+st.set_page_config(layout="wide", page_title="Sustainable Agriculture Dashboard")
+
+# Placeholder Data
+np.random.seed(42)
+regions = ["Kenya", "Ethiopia", "Tanzania"]
+crops = ["Maize", "Beans", "Tomatoes"]
+scenarios = ["Baseline", "Irrigation", "High Adoption", "Combined"]
+
+years = 10
+monte_carlo_runs = 100
+
+def generate_placeholder_data():
+    df_list = []
+    for scenario in scenarios:
+        for region in regions:
+            for crop in crops:
+                m = np.random.uniform(0.5, 10, years)
+                Yield = np.random.uniform(5, 20, years)
+                Profit = Yield * np.random.uniform(200, 500) - np.random.uniform(1000, 5000)
+                df = pd.DataFrame({
+                    "Year": np.arange(1, years+1),
+                    "m": m,
+                    "Yield": Yield,
+                    "Profit": Profit,
+                    "Scenario": scenario,
+                    "Region": region,
+                    "Crop": crop
+                })
+                df_list.append(df)
+    return pd.concat(df_list).reset_index(drop=True)
+
+df_all = generate_placeholder_data()
+
+# Tabs Layout
+tabs = st.tabs([
+    "Performance Scorecard", "KPI Snapshot", "Scenario Impact Summary",
+    "Historical Trends", "Forecast Panel", "Heatmaps", "Best Scenario",
+    "Scenario Comparison", "Recommended Actions", "Export Data"
+])
+
+# Tab 0: Performance Scorecard
+with tabs[0]:
+    st.header("Performance Scorecard")
+    sel_regions = st.multiselect("Select Regions", df_all["Region"].unique(), default=df_all["Region"].unique())
+    sel_crops = st.multiselect("Select Crops", df_all["Crop"].unique(), default=df_all["Crop"].unique())
+    sel_scenarios = st.multiselect("Select Scenarios", df_all["Scenario"].unique(), default=df_all["Scenario"].unique())
+
+    df_filtered = df_all[(df_all["Region"].isin(sel_regions)) &
+                         (df_all["Crop"].isin(sel_crops)) &
+                         (df_all["Scenario"].isin(sel_scenarios))]
+
+    w_m, w_y, w_p = 1/3, 1/3, 1/3
+    m_min, m_max = df_all["m"].min(), df_all["m"].max()
+    y_min, y_max = df_all["Yield"].min(), df_all["Yield"].max()
+    p_min, p_max = df_all["Profit"].min(), df_all["Profit"].max()
+
+    df_filtered["Score"] = (
+        w_m*(df_filtered["m"]-m_min)/(m_max-m_min) +
+        w_y*(df_filtered["Yield"]-y_min)/(y_max-y_min) +
+        w_p*(df_filtered["Profit"]-p_min)/(p_max-p_min)
+    ) * 100
+
+    avg_m = df_filtered["m"].mean()
+    avg_yield = df_filtered["Yield"].mean()
+    avg_profit = df_filtered["Profit"].mean()
+    avg_score = df_filtered["Score"].mean()
+
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Average Sustainability m", f"{avg_m:.2f}")
+    col2.metric("Average Yield (tons/ha)", f"{avg_yield:.2f}")
+    col3.metric("Average Profit ($)", f"{avg_profit:.2f}")
+    col4.metric("Average Sustainability Score", f"{avg_score:.2f}")
+
+    scorecard = df_filtered.groupby(["Scenario","Region","Crop"])["Score"].mean().reset_index()
+    def color_score(val):
+        if val >= 75: return 'background-color: #28a745; color:white'
+        elif val >= 50: return 'background-color: #ffc107; color:black'
+        else: return 'background-color: #dc3545; color:white'
+    st.dataframe(scorecard.style.applymap(color_score, subset=["Score"]))
+
+    st.markdown("### Top 5 Performing Scenarios")
+    st.table(scorecard.sort_values("Score", ascending=False).head(5))
+
+# Other tabs can have placeholders for now
+with tabs[1]:
+    st.header("KPI Snapshot")
+    st.line_chart(df_all.groupby("Year")["Yield"].mean())
+with tabs[2]:
+    st.header("Scenario Impact Summary")
+    st.bar_chart(df_all.groupby("Scenario")["Profit"].mean())
+with tabs[3]:
+    st.header("Historical Trends")
+    st.line_chart(df_all.groupby("Year")["m"].mean())
+with tabs[4]:
+    st.header("Forecast Panel")
+    st.markdown("Holt-Winters forecasts can be displayed here.")
+with tabs[5]:
+    st.header("Heatmaps")
+    st.markdown("Interactive heatmaps for metrics by Region/Crop/Scenario.")
+with tabs[6]:
+    st.header("Best Scenario Analysis")
+    st.table(scorecard.sort_values("Score", ascending=False).head(5))
+with tabs[7]:
+    st.header("Scenario Comparison")
+    st.line_chart(df_all.pivot_table(index="Year", columns="Scenario", values="Yield"))
+with tabs[8]:
+    st.header("Recommended Actions")
+    st.markdown("Provide actionable recommendations based on Score and metrics.")
+with tabs[9]:
+    st.header("Export Data")
+    csv = df_all.to_csv(index=False).encode('utf-8')
+    st.download_button("Download Full Dataset", data=csv, file_name="sustainability_dashboard_data.csv", mime="text/csv")
+"""
+
+# Save the file to /mnt/data so the user can download it
+file_path = '/mnt/data/sustainable_agriculture_dashboard.py'
+with open(file_path, 'w') as f:
+    f.write(app_code)
+
+file_path
