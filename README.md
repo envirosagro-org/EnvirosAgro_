@@ -17,3 +17,14 @@ A simple Streamlit app template for you to modify!
    ```
    $ streamlit run streamlit_app.py
    ```
+    
+ ## Demo app
+
+ Run the demo Streamlit app locally:
+
+ ```bash
+ pip3 install -r requirements.txt
+ streamlit run streamlit_app.py
+ ```
+
+ The demo includes a sidebar with dataset controls, a data preview, summary statistics, and a simple time-series chart.
