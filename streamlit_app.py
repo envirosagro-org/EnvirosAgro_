@@ -34,8 +34,45 @@ else:
     else:
         df = pd.DataFrame(np.random.randn(n_rows, 3), columns=["A", "B", "C"])
 
+# Normalize `day` column to timezone-naive datetimes for Arrow compatibility
+if "day" in df.columns:
+    df["day"] = pd.to_datetime(df["day"], errors="coerce")
+    # Remove timezone info if present
+    try:
+        if df["day"].dt.tz is not None:
+            df["day"] = df["day"].dt.tz_convert(None)
+    except Exception:
+        pass
+    try:
+        df["day"] = df["day"].dt.tz_localize(None)
+    except Exception:
+        # If localization fails, ignore — the column is likely already tz-naive
+        pass
+
 st.subheader("Data preview")
-st.dataframe(df.head(n_rows))
+# Create a display-safe copy for Streamlit to avoid Arrow serialization issues
+df_display = df.head(n_rows).copy()
+if "day" in df_display.columns:
+    # Convert to string for safe display (preserves readability)
+    try:
+        df_display["day"] = df_display["day"].astype(str)
+    except Exception:
+        df_display["day"] = df_display["day"].apply(lambda x: str(x))
+st.dataframe(df_display)
+
+with st.expander("Diagnostics (data types and sample)"):
+    st.write(df.dtypes)
+    if "day" in df.columns:
+        # show any rows where parsing previously failed (NaT)
+        try:
+            bad = df.loc[df["day"].isna()]
+            if not bad.empty:
+                st.warning("Some 'day' values could not be parsed; showing affected rows:")
+                st.dataframe(bad.head(10))
+            else:
+                st.write("All 'day' values parsed successfully or are present.")
+        except Exception:
+            st.write("Could not evaluate 'day' diagnostics.")
 
 with st.expander("Summary statistics"):
     st.write(df.describe(include='all'))
@@ -46,4 +83,10 @@ if show_chart:
         df_chart = df.set_index("day")[df.columns.drop("day")]
     else:
         df_chart = df
+    # Convert index to string to avoid Arrow serialization issues
+    try:
+        df_chart = df_chart.copy()
+        df_chart.index = df_chart.index.astype(str)
+    except Exception:
+        pass
     st.line_chart(df_chart)
