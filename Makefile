@@ -23,3 +23,8 @@ lint:
 	pre-commit run --all-files --show-diff-on-failure
 
 .PHONY: install run docker-build docker-run compose-up
+
+check:
+	python3 scripts/check_streamlit_up.py
+
+.PHONY: check
