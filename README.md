@@ -40,6 +40,8 @@ docker-compose up --build
 
 CI: A GitHub Actions workflow is included at `.github/workflows/docker-build.yml` which builds the image on pushes and PRs to `main`.
 
+[![CI: Docker build](https://github.com/envirosagro-org/EnvirosAgro_/actions/workflows/docker-build.yml/badge.svg)](https://github.com/envirosagro-org/EnvirosAgro_/actions/workflows/docker-build.yml)
+
 ## Publishing to GitHub Container Registry (GHCR)
 
 The workflow can publish the built image to GHCR when you push to `main`.

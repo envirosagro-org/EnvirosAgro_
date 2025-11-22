@@ -32,12 +32,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push (linux/amd64)
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          # Load the built image into the runner so we can inspect size
+          load: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/envirosagro-app:latest
             envirosagro-app:latest
@@ -45,3 +47,25 @@ jobs:
       - name: Show built images
         run: |
           docker images | grep envirosagro-app || true
+
+      - name: Report image size
+        if: always()
+        run: |
+          echo "Image list (envirosagro-app):"
+          docker images --format "{{.Repository}}:{{.Tag}} {{.Size}}" | grep envirosagro-app || true
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/envirosagro-app:latest
+          OUTFILE=image-size.txt
+          if docker image inspect "$IMAGE_NAME" > /dev/null 2>&1; then
+            SIZE_BYTES=$(docker image inspect --format='{{.Size}}' "$IMAGE_NAME")
+            HR_SIZE=$(numfmt --to=iec-i --suffix=B $SIZE_BYTES)
+            echo "Built image: $IMAGE_NAME size=$HR_SIZE ($SIZE_BYTES bytes)" | tee $OUTFILE
+          else
+            echo "Image $IMAGE_NAME not found in local docker images." | tee $OUTFILE
+          fi
+
+      - name: Upload image size artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-size
+          path: image-size.txt

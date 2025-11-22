@@ -67,7 +67,8 @@ with st.expander("Diagnostics (data types and sample)"):
         try:
             bad = df.loc[df["day"].isna()]
             if not bad.empty:
-                st.warning("Some 'day' values could not be parsed; showing affected rows:")
+                st.warning("Some 'day' values could not be parsed.")
+                st.info("Showing affected rows:")
                 st.dataframe(bad.head(10))
             else:
                 st.write("All 'day' values parsed successfully or are present.")
@@ -75,7 +76,7 @@ with st.expander("Diagnostics (data types and sample)"):
             st.write("Could not evaluate 'day' diagnostics.")
 
 with st.expander("Summary statistics"):
-    st.write(df.describe(include='all'))
+    st.write(df.describe(include="all"))
 
 if show_chart:
     st.subheader("Time series")

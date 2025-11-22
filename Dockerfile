@@ -40,7 +40,7 @@ WORKDIR /app
 # Minimal runtime packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       ca-certificates \
+       ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed python packages from the builder stage
@@ -56,7 +56,22 @@ USER appuser
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "streamlit_app.py", "--server.port", "8501", "--server.headless", "true", "--server.enableCORS", "false"]
+# Streamlit-specific environment defaults
+ENV STREAMLIT_SERVER_PORT=8501 \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+LABEL org.opencontainers.image.title="EnvirosAgro Demo" \
+      org.opencontainers.image.source="https://github.com/${GITHUB_REPOSITORY}" \
+      org.opencontainers.image.licenses="MIT"
+
+ENTRYPOINT ["streamlit", "run"]
+CMD ["streamlit_app.py", "--server.port", "8501", "--server.headless", "true", "--server.enableCORS", "false"]
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:8501/ || exit 1
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

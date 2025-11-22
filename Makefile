@@ -14,4 +14,12 @@ docker-run:
 compose-up:
 	docker-compose up --build
 
+.PHONY: lint
+
+lint:
+	python3 -m pip install --upgrade pip
+	python3 -m pip install -r dev-requirements.txt
+	ruff check . --fix
+	pre-commit run --all-files --show-diff-on-failure
+
 .PHONY: install run docker-build docker-run compose-up
