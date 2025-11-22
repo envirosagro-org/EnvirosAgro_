@@ -62,6 +62,18 @@ A `Makefile` is included to simplify common tasks:
 - `make docker-run` — run the built image and expose port `8501`.
 - `make compose-up` — run `docker-compose up --build` for development.
 
+- `make test` — run the test suite (`pytest`). Set `RUN_SMOKE_TESTS=1` to include the opt-in smoke test that checks localhost:8501-8503.
+
+Examples:
+
+```bash
+# Run unit tests only
+make test
+
+# Run the opt-in smoke test (checks local Streamlit)
+RUN_SMOKE_TESTS=1 make test
+```
+
 Note: `requirements.txt` now pins the current tested versions to help reproducible builds.
 
     

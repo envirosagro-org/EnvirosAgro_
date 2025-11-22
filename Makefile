@@ -28,3 +28,12 @@ check:
 	python3 scripts/check_streamlit_up.py
 
 .PHONY: check
+
+test:
+	python3 -m pip install --upgrade pip
+	python3 -m pip install -r dev-requirements.txt
+	python3 -m pip install pytest
+	# Run unit tests; set RUN_SMOKE_TESTS=1 to enable smoke test
+	pytest -q
+
+.PHONY: test
